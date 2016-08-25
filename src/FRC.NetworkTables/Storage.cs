@@ -99,7 +99,7 @@ namespace NetworkTables
 
         private Dictionary<string, Entry> m_entries = new Dictionary<string, Entry>();
         private readonly List<Entry> m_idMap = new List<Entry>();
-        internal readonly Dictionary<ImmutablePair<uint, uint>, byte[]> m_rpcResults = new Dictionary<ImmutablePair<uint, uint>, byte[]>();
+        internal readonly Dictionary<ValueTuple<uint, uint>, byte[]> m_rpcResults = new Dictionary<ValueTuple<uint, uint>, byte[]>();
         private readonly HashSet<long> m_blockingRpcCalls = new HashSet<long>();
 
         private bool m_terminating;
@@ -456,7 +456,7 @@ namespace NetworkTables
                     case RpcResponse:
                         if (m_server) return;
                         if (!msg.Val.IsRpc()) return; //Not an RPC message
-                        m_rpcResults.Add(new ImmutablePair<uint, uint>(msg.Id, msg.SeqNumUid), msg.Val.GetRpc());
+                        m_rpcResults.Add(new ValueTuple<uint, uint>(msg.Id, msg.SeqNumUid), msg.Val.GetRpc());
                         m_monitor.PulseAll();
                         break;
                 }
@@ -1120,7 +1120,7 @@ namespace NetworkTables
                     {
                         using(m_monitor.Enter())
                         {
-                            m_rpcResults.Add(new ImmutablePair<uint, uint>(msg.Id, msg.SeqNumUid), msg.Val.GetRpc());
+                            m_rpcResults.Add(new ValueTuple<uint, uint>(msg.Id, msg.SeqNumUid), msg.Val.GetRpc());
                             m_monitor.PulseAll();
                         }
                     });
@@ -1150,7 +1150,7 @@ namespace NetworkTables
                 if (!m_blockingRpcCalls.Add(callUid)) return null;
                 for (;;)
                 {
-                    var pair = new ImmutablePair<uint, uint>((uint)callUid >> 16, (uint)callUid & 0xffff);
+                    var pair = new ValueTuple<uint, uint>((uint)callUid >> 16, (uint)callUid & 0xffff);
                     byte[] str;
                     if (!m_rpcResults.TryGetValue(pair, out str))
                     {
@@ -1209,7 +1209,7 @@ namespace NetworkTables
                 }
                 for (;;)
                 {
-                    var pair = new ImmutablePair<uint, uint>((uint)callUid >> 16, (uint)callUid & 0xffff);
+                    var pair = new ValueTuple<uint, uint>((uint)callUid >> 16, (uint)callUid & 0xffff);
                     byte[] str;
                     if (!m_rpcResults.TryGetValue(pair, out str))
                     {
